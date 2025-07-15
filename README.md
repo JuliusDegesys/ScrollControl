@@ -72,7 +72,7 @@ To completely remove the app:
 
 ## Usage
 
-1. Once running, you'll see a ⚙️ icon in your menu bar
+1. Once running, you'll see a scroll control icon in your menu bar
 2. **Click** the icon to open the settings panel
 3. Configure your preferred scroll directions:
    - **Trackpad Natural Scroll**: Enable for natural trackpad scrolling
