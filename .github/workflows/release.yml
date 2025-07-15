@@ -32,10 +32,66 @@ jobs:
         cp .build/release/ScrollControl ScrollControl-release/
         cp README.md ScrollControl-release/
         cp LICENSE ScrollControl-release/
-        cp build.sh ScrollControl-release/
-        cp install.sh ScrollControl-release/
+        
+        # Create simplified install script for pre-built binary
+        cat > ScrollControl-release/install.sh << 'EOF'
+        #!/bin/bash
+        
+        # Installation script for ScrollControl (pre-built binary)
+        
+        APP_NAME="ScrollControl"
+        INSTALL_DIR="$HOME/Applications"
+        LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
+        PLIST_NAME="com.scrollcontrol.app.plist"
+        
+        echo "Installing ScrollControl..."
+        
+        # Create Applications directory if it doesn't exist
+        mkdir -p "$INSTALL_DIR"
+        
+        # Copy the app to Applications
+        cp "./ScrollControl" "$INSTALL_DIR/"
+        chmod +x "$INSTALL_DIR/ScrollControl"
+        
+        echo "✅ App installed to $INSTALL_DIR/ScrollControl"
+        
+        # Create LaunchAgent plist for auto-startup
+        mkdir -p "$LAUNCH_AGENTS_DIR"
+        
+        cat > "$LAUNCH_AGENTS_DIR/$PLIST_NAME" << PLIST_EOF
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>Label</key>
+            <string>com.scrollcontrol.app</string>
+            <key>ProgramArguments</key>
+            <array>
+                <string>$INSTALL_DIR/ScrollControl</string>
+            </array>
+            <key>RunAtLoad</key>
+            <true/>
+            <key>StandardOutPath</key>
+            <string>$HOME/Library/Logs/ScrollControl.log</string>
+            <key>StandardErrorPath</key>
+            <string>$HOME/Library/Logs/ScrollControl.log</string>
+        </dict>
+        </plist>
+        PLIST_EOF
+        
+        # Load the LaunchAgent
+        if ! launchctl bootstrap gui/$(id -u) "$LAUNCH_AGENTS_DIR/$PLIST_NAME" 2>/dev/null; then
+            launchctl load "$LAUNCH_AGENTS_DIR/$PLIST_NAME" 2>/dev/null || true
+        fi
+        
+        echo "✅ Auto-startup configured"
+        echo ""
+        echo "ScrollControl is now installed and will start automatically at login."
+        echo "You may need to grant accessibility permissions in System Settings."
+        EOF
+        
+        chmod +x ScrollControl-release/install.sh
         cp uninstall.sh ScrollControl-release/
-        cp test.sh ScrollControl-release/
         
     - name: Create archive
       run: |
@@ -55,25 +111,27 @@ jobs:
         body: |
           ## ScrollControl Release
           
-          ### Installation
+          **Pre-built binary included - no compilation required!**
+          
+          ### Quick Installation
           1. Download and extract `ScrollControl-macOS.tar.gz`
-          2. Run `./build.sh` to build the app
-          3. Run `./install.sh` to install and setup auto-startup
-          4. Grant accessibility permissions when prompted
+          2. Run `./install.sh` to install and setup auto-startup
+          3. Grant accessibility permissions when prompted
           
           ### Manual Installation
-          1. Run `./build.sh` to build
-          2. Run `.build/release/ScrollControl` directly
+          1. Download and extract `ScrollControl-macOS.tar.gz`
+          2. Run `./ScrollControl` directly (no auto-startup)
+          3. Grant accessibility permissions when prompted
           
           ### Features
           - Independent scroll direction control for trackpad and mouse wheel
-          - Menu bar integration with clean dropdown menu
+          - Clean menu bar dropdown (no popover arrow)
           - Persistent settings storage
-          - Auto-startup configuration
+          - Auto-startup configuration with install script
           
           ### Requirements
           - macOS 12.0 or later
-          - Accessibility permissions required
+          - Accessibility permissions required for scroll event monitoring
         draft: false
         prerelease: false
       env:
