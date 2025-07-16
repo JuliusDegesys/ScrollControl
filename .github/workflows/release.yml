@@ -30,6 +30,17 @@ jobs:
       run: |
         ./build-app.sh
         
+    - name: Fix app bundle permissions and attributes
+      run: |
+        # Fix executable permissions
+        chmod +x ScrollControl.app/Contents/MacOS/ScrollControl
+        
+        # Remove quarantine attribute that may cause issues
+        xattr -cr ScrollControl.app || true
+        
+        # Set proper permissions on the entire app bundle
+        chmod -R 755 ScrollControl.app
+        
     - name: Create release bundle
       run: |
         mkdir -p ScrollControl-release
@@ -70,8 +81,9 @@ jobs:
           
           ### Manual Installation
           1. Download and extract `ScrollControl-macOS.tar.gz`
-          2. Double-click `ScrollControl.app` to run directly
-          3. Grant accessibility permissions when prompted
+          2. Right-click `ScrollControl.app` and select "Open" (required for unsigned apps)
+          3. Click "Open" when macOS asks if you're sure
+          4. Grant accessibility permissions when prompted
           
           ### Features
           - Independent scroll direction control for trackpad and mouse wheel
