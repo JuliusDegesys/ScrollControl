@@ -22,76 +22,26 @@ jobs:
       with:
         xcode-version: latest-stable
     
-    - name: Build ScrollControl
+    - name: Install rsvg-convert
       run: |
-        swift build -c release
+        brew install librsvg
+    
+    - name: Build ScrollControl App
+      run: |
+        ./build-app.sh
         
     - name: Create release bundle
       run: |
         mkdir -p ScrollControl-release
-        cp .build/release/ScrollControl ScrollControl-release/
+        cp -R ScrollControl.app ScrollControl-release/
         cp README.md ScrollControl-release/
         cp LICENSE ScrollControl-release/
+        cp install-app.sh ScrollControl-release/install.sh
+        cp uninstall-app.sh ScrollControl-release/uninstall.sh
         
-        # Create simplified install script for pre-built binary
-        cat > ScrollControl-release/install.sh << 'EOF'
-        #!/bin/bash
-        
-        # Installation script for ScrollControl (pre-built binary)
-        
-        APP_NAME="ScrollControl"
-        INSTALL_DIR="$HOME/Applications"
-        LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
-        PLIST_NAME="com.scrollcontrol.app.plist"
-        
-        echo "Installing ScrollControl..."
-        
-        # Create Applications directory if it doesn't exist
-        mkdir -p "$INSTALL_DIR"
-        
-        # Copy the app to Applications
-        cp "./ScrollControl" "$INSTALL_DIR/"
-        chmod +x "$INSTALL_DIR/ScrollControl"
-        
-        echo "✅ App installed to $INSTALL_DIR/ScrollControl"
-        
-        # Create LaunchAgent plist for auto-startup
-        mkdir -p "$LAUNCH_AGENTS_DIR"
-        
-        cat > "$LAUNCH_AGENTS_DIR/$PLIST_NAME" << PLIST_EOF
-        <?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0">
-        <dict>
-            <key>Label</key>
-            <string>com.scrollcontrol.app</string>
-            <key>ProgramArguments</key>
-            <array>
-                <string>$INSTALL_DIR/ScrollControl</string>
-            </array>
-            <key>RunAtLoad</key>
-            <true/>
-            <key>StandardOutPath</key>
-            <string>$HOME/Library/Logs/ScrollControl.log</string>
-            <key>StandardErrorPath</key>
-            <string>$HOME/Library/Logs/ScrollControl.log</string>
-        </dict>
-        </plist>
-        PLIST_EOF
-        
-        # Load the LaunchAgent
-        if ! launchctl bootstrap gui/$(id -u) "$LAUNCH_AGENTS_DIR/$PLIST_NAME" 2>/dev/null; then
-            launchctl load "$LAUNCH_AGENTS_DIR/$PLIST_NAME" 2>/dev/null || true
-        fi
-        
-        echo "✅ Auto-startup configured"
-        echo ""
-        echo "ScrollControl is now installed and will start automatically at login."
-        echo "You may need to grant accessibility permissions in System Settings."
-        EOF
-        
+        # Make scripts executable
         chmod +x ScrollControl-release/install.sh
-        cp uninstall.sh ScrollControl-release/
+        chmod +x ScrollControl-release/uninstall.sh
         
     - name: Create archive
       run: |
@@ -111,27 +61,33 @@ jobs:
         body: |
           ## ScrollControl Release
           
-          **Pre-built binary included - no compilation required!**
+          **Native macOS app bundle included - no compilation required!**
           
           ### Quick Installation
           1. Download and extract `ScrollControl-macOS.tar.gz`
-          2. Run `./install.sh` to install and setup auto-startup
+          2. Run `./install.sh` to install ScrollControl.app to /Applications
           3. Grant accessibility permissions when prompted
           
           ### Manual Installation
           1. Download and extract `ScrollControl-macOS.tar.gz`
-          2. Run `./ScrollControl` directly (no auto-startup)
+          2. Double-click `ScrollControl.app` to run directly
           3. Grant accessibility permissions when prompted
           
           ### Features
           - Independent scroll direction control for trackpad and mouse wheel
-          - Clean menu bar dropdown (no popover arrow)
+          - Native macOS app with custom icon
+          - Clean menu bar dropdown interface
           - Persistent settings storage
           - Auto-startup configuration with install script
           
           ### Requirements
           - macOS 12.0 or later
           - Accessibility permissions required for scroll event monitoring
+          
+          ### What's Included
+          - `ScrollControl.app` - The native macOS application
+          - `install.sh` - Installs app to /Applications with auto-startup
+          - `uninstall.sh` - Removes app and auto-startup configuration
         draft: false
         prerelease: false
       env:

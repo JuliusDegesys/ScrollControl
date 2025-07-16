@@ -21,7 +21,10 @@ let package = Package(
         .executableTarget(
             name: "ScrollControl",
             dependencies: [],
-            path: "Sources/ScrollControl"
+            path: "Sources/ScrollControl",
+            resources: [
+                .process("Resources")
+            ]
         )
     ]
 )

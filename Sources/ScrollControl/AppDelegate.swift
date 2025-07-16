@@ -33,24 +33,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         
         if let button = statusItem.button {
-            // Create a simple scroll icon using NSImage drawing
+            // Create a simple mouse outline with white scroll wheel
             let image = NSImage(size: NSSize(width: 16, height: 16))
             image.lockFocus()
             
             // Draw mouse outline
-            let mousePath = NSBezierPath(roundedRect: NSRect(x: 3, y: 2, width: 10, height: 12), xRadius: 5, yRadius: 5)
-            mousePath.lineWidth = 1.5
+            let mousePath = NSBezierPath()
+            mousePath.move(to: NSPoint(x: 8, y: 2))
+            mousePath.curve(to: NSPoint(x: 12, y: 4), controlPoint1: NSPoint(x: 10.5, y: 2), controlPoint2: NSPoint(x: 12, y: 3))
+            mousePath.line(to: NSPoint(x: 12, y: 11))
+            mousePath.curve(to: NSPoint(x: 8, y: 13), controlPoint1: NSPoint(x: 12, y: 12), controlPoint2: NSPoint(x: 10.5, y: 13))
+            mousePath.curve(to: NSPoint(x: 4, y: 11), controlPoint1: NSPoint(x: 5.5, y: 13), controlPoint2: NSPoint(x: 4, y: 12))
+            mousePath.line(to: NSPoint(x: 4, y: 4))
+            mousePath.curve(to: NSPoint(x: 8, y: 2), controlPoint1: NSPoint(x: 4, y: 3), controlPoint2: NSPoint(x: 5.5, y: 2))
+            mousePath.close()
+            mousePath.lineWidth = 1.0
             NSColor.controlAccentColor.setStroke()
             mousePath.stroke()
             
-            // Draw scroll wheel line
-            let wheelPath = NSBezierPath()
-            wheelPath.move(to: NSPoint(x: 8, y: 5))
-            wheelPath.line(to: NSPoint(x: 8, y: 8))
-            wheelPath.lineWidth = 1.5
-            wheelPath.lineCapStyle = .round
-            NSColor.controlAccentColor.setStroke()
-            wheelPath.stroke()
+            // Draw white scroll wheel
+            let wheelRect = NSRect(x: 7, y: 5, width: 2, height: 4)
+            let wheelPath = NSBezierPath(roundedRect: wheelRect, xRadius: 1, yRadius: 1)
+            NSColor.white.setFill()
+            wheelPath.fill()
             
             image.unlockFocus()
             image.isTemplate = true
